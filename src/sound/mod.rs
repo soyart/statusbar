@@ -1,38 +1,34 @@
+use self::pulse::PulseServer;
+
 mod alsa;
 mod pipewire;
 mod pulse;
 
-pub trait SoundServer {
+pub(crate) trait Server {
+    fn init(&mut self) {}
+
     fn default_sink(&self) -> Option<String>;
-    fn sink_exists(&self, sink: &str) -> bool;
-    fn get_vol(&self, sink: &str) -> f32;
+    fn sink_exists(&self, sink: Option<&str>) -> bool;
+    fn sink_is_muted(&self, sink: &str) -> bool;
 }
 
-pub struct Ctrl {
-    target_sink: String,
-    step_size: u8,
+pub(crate) enum Sound {
+    ALSA,
+    PulseAudio(PulseServer),
+    Pipewire,
 }
 
-pub enum Server {
-    ALSA(Ctrl),
-    PulseAudio(Ctrl),
-    Pipewire(Ctrl),
-}
-
-impl std::fmt::Debug for Server {
+impl std::fmt::Debug for Sound {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::ALSA(Ctrl {
-                target_sink,
-                step_size: _,
-            }) => write!(f, "ALSA"),
+            Self::ALSA => write!(f, "ALSA"),
             Self::PulseAudio(_) => write!(f, "PulseAudio"),
-            Self::Pipewire(_) => write!(f, "PipeWire"),
+            Self::Pipewire => write!(f, "PipeWire"),
         }
     }
 }
 
-impl Server {
+impl Sound {
     fn auto_detect() -> Option<Self> {
         todo!()
     }

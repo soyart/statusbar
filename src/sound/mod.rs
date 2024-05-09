@@ -1,8 +1,8 @@
-use self::pulse::PulseServer;
-
 mod alsa;
 mod pipewire;
-mod pulse;
+mod pulseaudio;
+
+use self::{pipewire::PipeWireServer, pulseaudio::PulseServer};
 
 pub(crate) trait Server {
     fn init(&mut self) {}
@@ -10,22 +10,15 @@ pub(crate) trait Server {
     fn default_sink(&self) -> Option<String>;
     fn sink_exists(&self, sink: Option<&str>) -> bool;
     fn sink_is_muted(&self, sink: &str) -> bool;
+    fn mute_sink(&self, sink: &str) -> Result<(), ()>;
+    fn unmute_sink(&self, sink: &str) -> Result<(), ()>;
+    fn toggle_sink(&self, sink: &str) -> Result<(), ()>;
 }
 
 pub(crate) enum Sound {
     ALSA,
     PulseAudio(PulseServer),
-    Pipewire,
-}
-
-impl std::fmt::Debug for Sound {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::ALSA => write!(f, "ALSA"),
-            Self::PulseAudio(_) => write!(f, "PulseAudio"),
-            Self::Pipewire => write!(f, "PipeWire"),
-        }
-    }
+    Pipewire(PipeWireServer),
 }
 
 impl Sound {
@@ -34,7 +27,13 @@ impl Sound {
     }
 
     fn default_sink(&self) -> Option<String> {
-        todo!()
+        match self {
+            Self::PulseAudio(server) => server.default_sink(),
+            Self::Pipewire(server) => server.default_sink(),
+            _ => {
+                panic!("{} not implemented", self);
+            }
+        }
     }
 
     fn volume(&self, sink: Option<&str>) -> f32 {
@@ -44,4 +43,20 @@ impl Sound {
     fn vol_incr_percent(&self, sink: Option<&str>, percent: u8) {}
 
     fn vol_decr_percent(&self, sink: Option<&str>, percent: u8) {}
+}
+
+impl std::fmt::Debug for Sound {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self)
+    }
+}
+
+impl std::fmt::Display for Sound {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::ALSA => write!(f, "ALSA"),
+            Self::PulseAudio(_) => write!(f, "PulseAudio"),
+            Self::Pipewire(_) => write!(f, "PipeWire"),
+        }
+    }
 }

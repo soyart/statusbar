@@ -31,4 +31,40 @@ impl super::Server for PulseServer {
     fn sink_is_muted(&self, sink: &str) -> bool {
         sh::exec("pactl", &["get-sink-muted", sink]).is_ok_and(|output| false)
     }
+
+    fn mute_sink(&self, sink: &str) -> Result<(), ()> {
+        sh::exec("pactl", &["set-sink-mute", sink, "1"]).map_err(|_| ())
+    }
+
+    fn unmute_sink(&self, sink: &str) -> Result<(), ()> {
+        todo!()
+    }
+
+    fn toggle_sink(&self, sink: &str) -> Result<(), ()> {
+        todo!()
+    }
+}
+
+enum Mute {
+    Mute,
+    Unmute,
+    Toggle,
+}
+
+impl Mute {
+    fn to_str(&self) -> &str {
+        match self {
+            Self::Mute => "1",
+            Self::Unmute => "0",
+            Self::Toggle => "toggle",
+        }
+    }
+
+    fn to_string(&self) -> String {
+        self.to_str().to_string()
+    }
+}
+
+fn set_mute(sink: &str, mute: Mute) -> Result<(), ()> {
+    sh::exec("wpctl", &["set-mute", sink, mute.to_str()]).map_err(|_| ())
 }

@@ -29,19 +29,19 @@ impl super::Server for PulseServer {
     }
 
     fn sink_is_muted(&self, sink: &str) -> bool {
-        sh::exec("pactl", &["get-sink-muted", sink]).is_ok_and(|output| false)
+        sh::exec("pactl", &["get-sink-muted", sink]).is_ok_and(|_| false)
     }
 
     fn mute_sink(&self, sink: &str) -> Result<(), ()> {
-        sh::exec("pactl", &["set-sink-mute", sink, "1"]).map_err(|_| ())
+        set_mute(sink, Mute::Mute)
     }
 
     fn unmute_sink(&self, sink: &str) -> Result<(), ()> {
-        todo!()
+        set_mute(sink, Mute::Unmute)
     }
 
     fn toggle_sink(&self, sink: &str) -> Result<(), ()> {
-        todo!()
+        set_mute(sink, Mute::Toggle)
     }
 }
 
@@ -66,5 +66,5 @@ impl Mute {
 }
 
 fn set_mute(sink: &str, mute: Mute) -> Result<(), ()> {
-    sh::exec("wpctl", &["set-mute", sink, mute.to_str()]).map_err(|_| ())
+    sh::exec("pactl", &["set-sink-mute", sink, mute.to_str()]).map_err(|_| ())
 }

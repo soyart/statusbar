@@ -1,4 +1,11 @@
+use super::Mute;
 use crate::sh;
+
+const DEFAULT_SINK: &str = "@DEFAULT_SINK@";
+
+const MUTE: Mute = Mute::Mute("1");
+const UNMUTE: Mute = Mute::Unmute("0");
+const TOGGLE: Mute = Mute::Toggle("toggle");
 
 #[derive(Default)]
 pub struct PulseServer(pub String);
@@ -33,35 +40,15 @@ impl super::Server for PulseServer {
     }
 
     fn mute_sink(&self, sink: &str) -> Result<(), ()> {
-        set_mute(sink, Mute::Mute)
+        set_mute(sink, MUTE)
     }
 
     fn unmute_sink(&self, sink: &str) -> Result<(), ()> {
-        set_mute(sink, Mute::Unmute)
+        set_mute(sink, UNMUTE)
     }
 
     fn toggle_sink(&self, sink: &str) -> Result<(), ()> {
-        set_mute(sink, Mute::Toggle)
-    }
-}
-
-enum Mute {
-    Mute,
-    Unmute,
-    Toggle,
-}
-
-impl Mute {
-    fn to_str(&self) -> &str {
-        match self {
-            Self::Mute => "1",
-            Self::Unmute => "0",
-            Self::Toggle => "toggle",
-        }
-    }
-
-    fn to_string(&self) -> String {
-        self.to_str().to_string()
+        set_mute(sink, TOGGLE)
     }
 }
 

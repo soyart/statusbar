@@ -21,6 +21,26 @@ pub(crate) enum Sound {
     Pipewire(PipeWireServer),
 }
 
+pub enum Mute {
+    Mute(&'static str),
+    Unmute(&'static str),
+    Toggle(&'static str),
+}
+
+impl Mute {
+    fn to_str(&self) -> &str {
+        match self {
+            Self::Mute(v) => v,
+            Self::Unmute(v) => v,
+            Self::Toggle(v) => v,
+        }
+    }
+
+    fn to_string(&self) -> String {
+        self.to_str().to_string()
+    }
+}
+
 impl Sound {
     fn auto_detect() -> Option<Self> {
         todo!()
@@ -59,4 +79,16 @@ impl std::fmt::Display for Sound {
             Self::Pipewire(_) => write!(f, "PipeWire"),
         }
     }
+}
+
+pub fn floor(percent: u8) -> u8 {
+    if percent > 100 {
+        return 100;
+    }
+
+    if percent < 0 {
+        return 0;
+    }
+
+    percent
 }

@@ -1,4 +1,5 @@
 mod cli;
+mod foo;
 mod sh;
 mod sound;
 

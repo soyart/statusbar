@@ -1,9 +1,14 @@
+use super::Mute;
 use crate::sh;
 
 #[derive(Default)]
 pub struct PipeWireServer();
 
 const DEFAULT_SINK: &str = "@DEFAULT_AUDIO_SINK@";
+
+const MUTE: Mute = Mute::Mute("1");
+const UNMUTE: Mute = Mute::Unmute("0");
+const TOGGLE: Mute = Mute::Toggle("toggle");
 
 impl super::Server for PipeWireServer {
     fn default_sink(&self) -> Option<String> {
@@ -23,39 +28,19 @@ impl super::Server for PipeWireServer {
     }
 
     fn mute_sink(&self, sink: &str) -> Result<(), ()> {
-        set_mute(sink, Mute::Mute)
+        set_mute(sink, MUTE)
     }
 
     fn unmute_sink(&self, sink: &str) -> Result<(), ()> {
-        set_mute(sink, Mute::Unmute)
+        set_mute(sink, UNMUTE)
     }
 
     fn toggle_sink(&self, sink: &str) -> Result<(), ()> {
-        set_mute(sink, Mute::Toggle)
+        set_mute(sink, TOGGLE)
     }
 }
 
-enum Mute {
-    Mute,
-    Unmute,
-    Toggle,
-}
-
-impl Mute {
-    fn to_str(&self) -> &str {
-        match self {
-            Self::Mute => "1",
-            Self::Unmute => "0",
-            Self::Toggle => "toggle",
-        }
-    }
-
-    fn to_string(&self) -> String {
-        self.to_str().to_string()
-    }
-}
-
-fn set_mute(sink: &str, mute: Mute) -> Result<(), ()> {
+fn set_mute(sink: &str, mute: super::Mute) -> Result<(), ()> {
     sh::exec("wpctl", &["set-mute", sink, mute.to_str()]).map_err(|_| ())
 }
 
